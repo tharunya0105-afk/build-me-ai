@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Build Me AI – Home Construction Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --brick: #c0392b;
+      --sand: #f5e6c8;
+      --charcoal: #1a1a2e;
+      --steel: #2c3e50;
+      --cement: #7f8c8d;
+      --gold: #e67e22;
+      --lime: #27ae60;
+      --sky: #2980b9;
+      --white: #fafaf8;
+      --card-bg: #ffffff;
+      --shadow: 0 8px 32px rgba(26,26,46,0.12);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--charcoal);
+      overflow-x: hidden;
+    }
+
+    /* ── WELCOME FULL-SCREEN OVERLAY ── */
+    #welcomePoster {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100vh;
+      background: linear-gradient(rgba(26,26,46,0.4), rgba(26,26,46,0.85)), 
+                  url('Gemini_Generated_Image_3etvt3etvt3etvt3.png') center/cover no-repeat;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      text-align: center;
+      padding: 20px;
+      transition: opacity 0.5s ease, visibility 0.5s;
+    }
+    #welcomePoster h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(36px, 5vw, 64px);
+      color: var(--sand);
+      margin-bottom: 12px;
+      text-shadow: 0 4px 15px rgba(0,0,0,0.7);
+    }
+    #welcomePoster h1 span { color: var(--gold); }
+    #welcomePoster p {
+      font-size: clamp(16px, 1.8vw, 20px);
+      color: #fff;
+      max-width: 600px;
+      margin-bottom: 30px;
+      line-height: 1.6;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    }
+    #welcomePoster .enter-btn {
+      padding: 16px 45px;
+      font-size: 16px;
+      font-weight: 600;
+      background: var(--gold);
+      color: var(--charcoal);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(230,126,34,0.4);
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    #welcomePoster .enter-btn:hover {
+      background: #f39c12;
+      transform: scale(1.05);
+    }
+
+    /* ── MUSIC BAR CONTROL ── */
+    .music-control {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: var(--sand) !important;
+      font-size: 16px !important;
+      padding: 7px 12px !important;
+      border-radius: 50% !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(245,230,200,0.3) !important;
+    }
+    .music-control:hover {
+      background: var(--gold) !important;
+      color: var(--charcoal) !important;
+    }
+
+    /* ── NAVIGATION ARCHITECTURE ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 40px;
+      background: rgba(26,26,46,0.95);
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px; color: var(--sand);
+      letter-spacing: -0.5px;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .nav-links button {
+      background: transparent; border: none; color: #bbb;
+      font-family: 'DM Sans', sans-serif; font-size: 13px;
+      padding: 7px 14px; border-radius: 8px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-links button:hover, .nav-links button.active {
+      background: var(--gold); color: var(--charcoal); font-weight: 600;
+    }
+    #loginBtn {
+      background: var(--brick) !important; color: white !important;
+      border-radius: 8px !important;
+    }
+
+    /* ── PAGES MANAGEMENT ── */
+    .page { display: none; padding-top: 80px; min-height: 100vh; }
+    .page.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── HERO WORKSPACE SYSTEM ── */
+    #home {
+      color: var(--white); position: relative; overflow: hidden;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; text-align: center; 
+      padding: 240px 40px 60px; 
+      background-color: #01040a;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-image: url('Gemini_Generated_Image_3etvt3etvt3etvt3.png');
+      background-size: cover; background-position: center;
+      z-index: 1; opacity: 0;
+      transform: scale(1.15);
+    }
+    .hero-bg.animate {
+      animation: cinematicReveal 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+    .grid-overlay {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(0, 242, 254, 0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0, 242, 254, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px; background-position: center;
+      z-index: 2; opacity: 1;
+    }
+    .scan-line {
+      position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(to right, transparent, rgba(0, 212, 255, 0.15), rgba(0, 212, 255, 0.3), transparent);
+      z-index: 3; pointer-events: none; transform: skewX(-25deg);
+      animation: cyberScan 4s ease-in-out infinite;
+    }
+    .hero-content-wrapper { position: relative; z-index: 4; max-width: 900px; margin: 0 auto; }
+
+    @keyframes cinematicReveal {
+      0% { opacity: 0; transform: scale(1.1); filter: brightness(0.4); }
+      100% { opacity: 0.8; transform: scale(1); filter: brightness(0.8); }
+    }
+    @keyframes cyberScan { 0% { left: -150%; } 50% { left: 150%; } 100% { left: 150%; } }
+
+    #home h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(40px, 7vw, 80px); line-height: 1.1;
+      color: var(--sand); text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+    }
+    #home h1 span { color: var(--gold); }
+    #home p {
+      font-size: clamp(16px, 2.5vw, 20px); color: #fff; max-width: 560px;
+      margin: 20px auto 40px; line-height: 1.7; text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    }
+    .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      padding: 14px 32px; border-radius: 50px; font-weight: 600; font-size: 15px;
+      cursor: pointer; border: none; transition: all 0.25s; font-family: 'DM Sans', sans-serif;
+    }
+    .btn-primary { background: var(--gold); color: var(--charcoal); }
+    .btn-primary:hover { background: #f39c12; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(230,126,34,0.4); }
+    .btn-secondary { background: rgba(0,0,0,0.6); color: var(--sand); border: 2px solid rgba(245,230,200,0.6); backdrop-filter: blur(4px); }
+    .btn-secondary:hover { background: rgba(245,230,200,0.2); transform: translateY(-2px); }
+
+    .hero-stats {
+      display: flex; gap: 40px; margin-top: 60px; flex-wrap: wrap; justify-content: center;
+      background: rgba(26,26,46,0.85); padding: 20px 40px; border-radius: 50px; backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .stat { text-align: center; }
+    .stat-num { font-family: 'DM Serif Display', serif; font-size: 36px; color: var(--gold); }
+    .stat-label { font-size: 13px; color: #ccddee; margin-top: 4px; }
+
+    /* ── SECTIONS WRAPPERS ── */
+    .section { padding: 70px 40px; max-width: 1100px; margin: auto; }
+    .section-title { font-family: 'DM Serif Display', serif; font-size: 36px; color: var(--charcoal); margin-bottom: 8px; }
+    .section-sub { color: var(--cement); font-size: 16px; margin-bottom: 40px; }
+
+    /* ── FORM BOXES ── */
+    .form-box {
+      background: var(--card-bg); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 36px; max-width: 640px;
+      border: 1px solid rgba(0,0,0,0.05); margin-bottom: 25px;
+    }
+    .form-box h3 { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 20px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--steel); margin-bottom: 6px; margin-top: 14px; }
+    input, select {
+      width: 100%; padding: 12px 16px; border: 1.5px solid #e0e0e0;
+      border-radius: 10px; font-size: 14px; font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.2s; outline: none; color: var(--charcoal);
+      background: #fafafa;
+    }
+    input:focus, select:focus { border-color: var(--gold); background: white; }
+    
+    .submit-btn {
+      margin-top: 20px; padding: 13px 28px; background: var(--charcoal); color: white;
+      border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; width: 100%;
+    }
+    .submit-btn:hover { background: var(--gold); color: var(--charcoal); transform: translateY(-1px); }
+    
+    /* DIRECTORY ROWS */
+    .eng-card {
+      background: white; border-radius: var(--radius); padding: 20px 24px;
+      border-left: 5px solid var(--lime); box-shadow: var(--shadow);
+      margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .eng-info h4 { font-size: 17px; font-weight: 600; }
+    .eng-info p { font-size: 13px; color: var(--cement); margin-top: 4px; }
+    .eng-badges { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .badge-green { background: #d4f5e2; color: #145a32; }
+    .badge-blue { background: #d6eaf8; color: #1a5276; }
+    .badge-orange { background: #fde8d1; color: #7d5a00; }
+    .contact-btn {
+      padding: 9px 20px; background: var(--sky); color: white; border: none;
+      border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .contact-btn:hover { background: #1f618d; }
+
+    /* ESTIMATOR OUTS */
+    .est-result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 20px; }
+    .est-item {
+      background: white; border-radius: 12px; padding: 18px 16px; text-align: center;
+      border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .est-item .qty { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--brick); }
+    .est-item .unit { font-size: 12px; color: var(--cement); }
+    .est-item .mat { font-size: 14px; font-weight: 600; margin-top: 4px; }
+
+    /* DECOR OBJECTS */
+    .decor-card { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.05); }
+    .color-swatches { display: flex; gap: 10px; margin: 16px 0; }
+    .swatch { width: 44px; height: 44px; border-radius: 10px; border: 2px solid rgba(0,0,0,0.08); }
+    .furniture-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
+    .furn-item { background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 12px 14px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+
+    /* SHOPS AREA */
+    .shop-card {
+      background: white; border-radius: var(--radius); padding: 20px 24px;
+      border: 1px solid #eee; box-shadow: var(--shadow); margin-bottom: 16px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+    .stars { color: #f39c12; }
+
+    /* CANVAS BLUEPRINTS */
+    .layout-canvas-wrap { background: #111424; border-radius: var(--radius); overflow: hidden; padding: 10px; }
+    canvas#layoutCanvas { display: block; width: 100%; background: #0c0f1d; border-radius: 8px; }
+    .room-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .room-btn {
+      padding: 8px 16px; border-radius: 8px; border: 1.5px solid #ddd;
+      background: white; font-family: 'DM Sans', sans-serif; font-size: 13px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .room-btn:hover { background: var(--charcoal); color: white; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; background: #f0f0f0; border-radius: 12px; padding: 4px; width: fit-content; margin-bottom: 28px; }
+    .tab {
+      padding: 9px 20px; border-radius: 9px; font-size: 14px; font-weight: 600;
+      cursor: pointer; border: none; background: transparent; color: var(--cement);
+    }
+    .tab.active { background: white; color: var(--charcoal); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .toast {
+      position: fixed; bottom: 30px; right: 30px; z-index: 99999;
+      background: var(--charcoal); color: white; padding: 14px 24px;
+      border-radius: 12px; font-size: 14px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      transform: translateY(80px); opacity: 0; transition: all 0.4s; pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .result-box { margin-top: 24px; background: #f0f7ff; border-left: 4px solid var(--sky); padding: 18px 20px; border-radius: 10px; }
+    .result-box.success { background: #f0fff5; border-color: var(--lime); }
+    
+    footer { background: var(--charcoal); color: #667; text-align: center; padding: 32px; font-size: 14px; margin-top: 60px; }
+    footer span { color: var(--gold); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div id="welcomePoster">
+  <h1>BuildMe <span>AI Workspace</span></h1>
+  <p>An interactive modeling environment to calculate building diagnostics, plan structural metrics, and manage design logs smoothly.</p>
+  <button class="enter-btn" onclick="initializeWorkspace()">Enter </button>
+</div>
+
+<audio id="bgMusic" loop src="The_Velvet_Hour.mp3"></audio>
+
+<nav>
+  <div class="nav-logo">BuildMe<span>AI</span> 🏗️</div>
+  <div class="nav-links">
+    <button class="music-control" id="musicToggleBtn" onclick="toggleMusic()" title="Mute/Unmute Audio Layout">🔇</button>
+    <button class="active" onclick="showPage('home',this)">Home</button>
+    <button onclick="showPage('find-engineer',this)">Find Engineers</button>
+    <button onclick="showPage('estimator',this)">Estimator</button>
+    <button onclick="showPage('decor',this)">Decor Ideas</button>
+    <button onclick="showPage('shops',this)">Shops</button>
+    <button onclick="showPage('layout',this)">3D Layout</button>
+    <button id="loginBtn" onclick="showPage('login',this)">Login</button>
+  </div>
+</nav>
+
+<div id="home" class="page active">
+  <div class="grid-overlay"></div>
+  <div class="hero-bg" id="animatedHeroBg"></div>
+  <div class="scan-line"></div>
+  
+  <div class="hero-content-wrapper">
+    <h3>Every Dream Home<br><span>Starts With An Idea.</span></h3>
+    
+    <div class="hero-btns">
+      <button class="btn btn-primary" onclick="showPage('find-engineer',null)">Browse Engineers →</button>
+      <button class="btn btn-secondary" onclick="showPage('layout',null)">Open Studio Builder</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">8 Active</div><div class="stat-label">Civil Experts</div></div>
+      <div class="stat"><div class="stat-num">2,420</div><div class="stat-label">Queries Processed</div></div>
+      <div class="stat"><div class="stat-num">99.7%</div><div class="stat-label">Precision Log</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="find-engineer" class="page">
+  <div class="section">
+    <div class="section-title">👷 Directory Services</div>
+    <div class="section-sub">Filter engineers and consultants by location and field specialties.</div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('eng','search',this)">Search Engineers</button>
+      <button class="tab" onclick="switchTab('eng','post',this)">Publish Requirements</button>
+    </div>
+
+    <div id="eng-search" class="tab-content active">
+      <div class="form-box" style="max-width:100%;">
+        <div class="form-row">
+          <div><label>Regional Location</label><input type="text" id="fCity" placeholder="e.g. Chennai, Delhi, Mumbai, Bangalore"/></div>
+          <div>
+            <label>Field Specialization</label>
+            <select id="fSpec">
+              <option value="">All Fields</option>
+              <option>Residential</option>
+              <option>Commercial</option>
+              <option>Interior Design</option>
+              <option>Structural</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div><label>Ceiling Budget Assignment: <span id="budgetVal">₹5,00,000</span></label><input type="range" id="fBudget" min="50000" max="500000" step="10000" value="500000" oninput="updateBudgetLabel()"/></div>
+          <div>
+            <label>Feedback Target</label>
+            <select id="fRating"><option value="0">Show All Ratings</option><option value="4.5">4.5★ or superior</option></select>
+          </div>
+        </div>
+        <button class="submit-btn" onclick="searchEngineEngineers()">Run Filter Query</button>
+      </div>
+      <div id="engResults" style="margin-top: 25px;"></div>
+    </div>
+
+    <div id="eng-post" class="tab-content">
+      <div class="form-box">
+        <h3>📤 Broadcast Specifications</h3>
+        <label>Concept Scope Title</label><input type="text" placeholder="e.g. Modern Residential Foundation setup"/>
+        <label>Structural Dimensions Overview</label><input type="text" placeholder="Provide raw measurements..."/>
+        <button class="submit-btn" onclick="showToast('Project variables published to system array.')">Broadcast Post</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="estimator" class="page">
+  <div class="section">
+    <div class="section-title">🧱 Material Yield Estimation Engine</div>
+    <div class="section-sub">Derive raw material allocations instantly matching layout bounds.</div>
+    <div class="form-box">
+      <h3>Footprint Bounds</h3>
+      <div class="form-row">
+        <div><label>Length (ft)</label><input type="number" id="estLen" value="50"/></div>
+        <div><label>Width (ft)</label><input type="number" id="estWid" value="40"/></div>
+      </div>
+      <div class="form-row">
+        <div><label>Floors Stack Count</label><input type="number" id="estFloors" value="1" min="1"/></div>
+        <div>
+          <label>Finishing Grade Specs</label>
+          <select id="estType">
+            <option value="standard">Standard Level (₹1,800/sq.ft)</option>
+            <option value="premium">Premium Level (₹2,500/sq.ft)</option>
+            <option value="economy">Economy Level (₹1,400/sq.ft)</option>
+          </select>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="calcMaterials()">Compute Metrics</button>
+    </div>
+    <div id="estResults"></div>
+  </div>
+</div>
+
+<div id="decor" class="page">
+  <div class="section">
+    <div class="section-title">🎨 AI Decor Palette Matrix</div>
+    <div class="section-sub">Generate room maps, track setups, and paint swatches using design models.</div>
+    <div class="form-box">
+      <div class="form-row">
+        <div>
+          <label>Target Area</label>
+          <select id="dRoom"><option>Living Room</option><option>Master Suite Bedroom</option><option>Modular Culinary Kitchen</option></select>
+        </div>
+        <div>
+          <label>Theme Filter Profile</label>
+          <select id="dStyle"><option>Modern Luxury</option><option>Scandinavian Minimalist</option><option>Industrial Raw Tech</option></select>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="getDecor()">Synthesize Design Ideas</button>
+    </div>
+    <div id="decorOut"></div>
+  </div>
+</div>
+
+<div id="shops" class="page">
+  <div class="section">
+    <div class="section-title">🛍️ Hub Supply Chains</div>
+    <div class="section-sub">Connect with audited building yards and material outlets.</div>
+    <div id="shopsContainer"></div>
+  </div>
+</div>
+
+<div id="layout" class="page">
+  <div class="section">
+    <div class="section-title">📐 Blueprint Studio & Spatial Engine</div>
+    <div class="section-sub">Assemble structural blueprints and map modules across isometric spaces.</div>
+    <div class="form-row" style="max-width:700px;">
+      <div><label>Zone Designation</label><input type="text" id="rName" value="Master Suite"/></div>
+      <div><label>Horizontal Dimension (ft)</label><input type="number" id="rW" value="16"/></div>
+      <div><label>Vertical Dimension (ft)</label><input type="number" id="rL" value="14"/></div>
+    </div>
+    <div class="room-controls" style="margin-top:15px;">
+      <button class="room-btn" onclick="addRoom()">+ Append Studio Module</button>
+      <button class="room-btn" onclick="toggle3D()">Swap to 3D Viewport Mode</button>
+    </div>
+    <div class="layout-canvas-wrap">
+      <canvas id="layoutCanvas" width="900" height="400"></canvas>
+    </div>
+  </div>
+</div>
+
+<div id="login" class="page">
+  <div class="section">
+    <div class="form-box">
+      <h3>System Portal Node</h3>
+      <label>Workspace Username Identification</label><input type="text" placeholder="username@domain.com"/>
+      <label>Vault Passkey Keyphrase</label><input type="password" placeholder="••••••••"/>
+      <button class="submit-btn" onclick="showToast('Token valid. Access logs synced.')">Connect Credentials</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<footer>Made with 💙 by tharunya <span>BuildMe AI</span> &nbsp;|&nbsp; © 2026 Core Platform Ecosystem</footer>
+
+<script>
+  // EXPANDED DIRECTORY ARCHIVE (MORE ENGINEERS ADDED)
+  const directoryPool = [
+    { name: "Er. Rajesh Kumar", city: "Chennai", spec: "Residential", fee: 45000, rating: 4.8, exp: 12 },
+    { name: "Er. Amit Sharma", city: "Delhi", spec: "Commercial", fee: 120000, rating: 4.6, exp: 10 },
+    { name: "Er. Priya Desai", city: "Mumbai", spec: "Interior Design", fee: 35000, rating: 4.9, exp: 8 },
+    { name: "Er. Vikram Singh", city: "Chennai", spec: "Structural", fee: 95000, rating: 4.4, exp: 15 },
+    { name: "Er. Rohan Hegde", city: "Bangalore", spec: "Structural", fee: 110000, rating: 4.8, exp: 14 },
+    { name: "Er. Meera Joshi", city: "Mumbai", spec: "Residential", fee: 60000, rating: 4.7, exp: 9 },
+    { name: "Er. Nitin Malhotra", city: "Delhi", spec: "Interior Design", fee: 40000, rating: 4.5, exp: 7 },
+    { name: "Er. Ananya Rao", city: "Bangalore", spec: "Commercial", fee: 135000, rating: 4.9, exp: 11 }
+  ];
+
+  // EXPANDED REGIONAL SUPPLIER OUTLETS DATA ARRAY
+  const supplyShopsPool = [
+    { name: "Alpha Aggregates & Cement Hub", desc: "Industrial Estate Zone Alpha", rating: "★★★★★" },
+    { name: "Apex Structural Steel Corp", desc: "Logistics Sector Port Road", rating: "★★★★☆" },
+    { name: "Metropolitan Lumber & Timber Yards", desc: "West Timber Precinct Bypass", rating: "★★★★★" },
+    { name: "Beacon Electricals & Conduits", desc: "Central Electric Bazaar Alley 4", rating: "★★★★☆" },
+    { name: "Heritage Ceramic Tiles & Granite", desc: "Marble Complex Highway Junction", rating: "★★★★★" },
+    { name: "BlueSky Ready-Mix Concrete Inc.", desc: "Outer Ring Industrial Circle Block B", rating: "★★★★☆" }
+  ];
+
+  let structuralModules = [
+    { name: "Grand Entrance Living Area", w: 22, l: 18, x: 60, y: 60, color: "#2c3e50" },
+    { name: "Culinary Prep Bay", w: 14, l: 12, x: 280, y: 60, color: "#e67e22" }
+  ];
+  let viewportMode3D = false;
+
+  window.addEventListener('DOMContentLoaded', () => {
+    renderSpatialBlueprint();
+    renderEngineers(directoryPool);
+    renderShops();
+  });
+
+  function initializeWorkspace() {
+    const splash = document.getElementById('welcomePoster');
+    splash.style.opacity = '0';
+    
+    setTimeout(() => {
+      splash.style.display = 'none';
+      document.getElementById('animatedHeroBg').classList.add('animate');
+    }, 500);
+
+    const soundTrack = document.getElementById('bgMusic');
+    const interfaceToggle = document.getElementById('musicToggleBtn');
+    
+    soundTrack.play()
+      .then(() => {
+        interfaceToggle.innerText = "🎵";
+      })
+      .catch(error => {
+        console.error("Browser audio safety policy block checked: ", error);
+      });
+  }
+
+  function toggleMusic() {
+    const track = document.getElementById('bgMusic');
+    const toggle = document.getElementById('musicToggleBtn');
+    if (track.paused) {
+      track.play();
+      toggle.innerText = "🎵";
+    } else {
+      track.pause();
+      toggle.innerText = "🔇";
+    }
+  }
+
+  function showPage(pageId, btnEl) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const targetedView = document.getElementById(pageId);
+    if(targetedView) targetedView.classList.add('active');
+    
+    if(btnEl) {
+      document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+    }
+  }
+
+  function switchTab(prefix, tabId, btnEl) {
+    document.querySelectorAll(`[id^="${prefix}-"]`).forEach(c => c.classList.remove('active'));
+    const content = document.getElementById(`${prefix}-${tabId}`);
+    if(content) content.classList.add('active');
+    if(btnEl) {
+      btnEl.parentElement.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+    }
+  }
+
+  function updateBudgetLabel() {
+    const val = document.getElementById('fBudget').value;
+    document.getElementById('budgetVal').innerText = '₹' + parseInt(val).toLocaleString('en-IN');
+  }
+
+  function searchEngineEngineers() {
+    const queryCity = document.getElementById('fCity').value.trim().toLowerCase();
+    const querySpec = document.getElementById('fSpec').value;
+    const upperLimitFee = parseInt(document.getElementById('fBudget').value);
+    const lowerLimitRating = parseFloat(document.getElementById('fRating').value);
+
+    const filteringOutcomes = directoryPool.filter(eng => {
+      const matchCity = !queryCity || eng.city.toLowerCase().includes(queryCity);
+      const matchSpec = !querySpec || eng.spec === querySpec;
+      const matchFee = eng.fee <= upperLimitFee;
+      const matchRating = eng.rating >= lowerLimitRating;
+      return matchCity && matchSpec && matchFee && matchRating;
+    });
+
+    renderEngineers(filteringOutcomes);
+    showToast(`Located ${filteringOutcomes.length} engineers satisfying target metrics.`);
+  }
+
+  function renderEngineers(list) {
+    const targetDiv = document.getElementById('engResults');
+    targetDiv.innerHTML = "";
+    if(list.length === 0) {
+      targetDiv.innerHTML = "<div class='result-box'>No specialized entities matched current matrix parameters.</div>";
+      return;
+    }
+    list.forEach(eng => {
+      targetDiv.innerHTML += `
+        <div class="eng-card">
+          <div class="eng-info">
+            <h4>${eng.name}</h4>
+            <p>Operations Base: ${eng.city} • Structural Service Timeline: ${eng.exp} Years</p>
+            <div class="eng-badges">
+              <span class="badge badge-green">${eng.spec}</span>
+              <span class="badge badge-blue">Feedback Score: ${eng.rating} ★</span>
+              <span class="badge badge-orange">Retainer Rate: ₹${eng.fee.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+          <button class="contact-btn" onclick="showToast('Communication node initialized with ${eng.name}')">Establish Channel</button>
+        </div>`;
+    });
+  }
+
+  function renderShops() {
+    const container = document.getElementById('shopsContainer');
+    container.innerHTML = "";
+    supplyShopsPool.forEach(shop => {
+      container.innerHTML += `
+        <div class="shop-card">
+          <div><h4>${shop.name}</h4><p>${shop.desc} • <span class="stars">${shop.rating}</span></p></div>
+          <button class="contact-btn" onclick="showToast('Commercial quote requested from ${shop.name}.')">Request Quote</button>
+        </div>`;
+    });
+  }
+
+  function calcMaterials() {
+    const lValue = parseFloat(document.getElementById('estLen').value) || 0;
+    const wValue = parseFloat(document.getElementById('estWid').value) || 0;
+    const levelMultipliers = parseInt(document.getElementById('estFloors').value) || 1;
+    const qualityLevel = document.getElementById('estType').value;
+
+    const aggregateFootprintArea = lValue * wValue * levelMultipliers;
+    let baselineRateCost = 1800;
+    if(qualityLevel === 'premium') baselineRateCost = 2500;
+    if(qualityLevel === 'economy') baselineRateCost = 1400;
+
+    const derivedFiscalEstimation = aggregateFootprintArea * baselineRateCost;
+    
+    const cementCount = Math.round(aggregateFootprintArea * 0.45);
+    const structuralSteelWeight = Math.round(aggregateFootprintArea * 4.2);
+    const sandCftVolume = Math.round(aggregateFootprintArea * 1.8);
+    const aggregatesCftVolume = Math.round(aggregateFootprintArea * 1.35);
+    const brickPieces = Math.round(aggregateFootprintArea * 8.5);
+
+    document.getElementById('estResults').innerHTML = `
+      <div class="result-box success">
+        <h3>Calculated Materials Allocation Index</h3>
+        <p>Accumulated Spatial Area: <strong>${aggregateFootprintArea.toLocaleString()} Sq.Ft</strong></p>
+        <p>Estimated Cost Ledger Summary: <strong>₹${derivedFiscalEstimation.toLocaleString('en-IN')}</strong></p>
+      </div>
+      <div class="est-result-grid">
+        <div class="est-item"><div class="qty">${cementCount}</div><div class="unit">Bags</div><div class="mat">Portland Cement</div></div>
+        <div class="est-item"><div class="qty">${structuralSteelWeight.toLocaleString()}</div><div class="unit">Kilograms</div><div class="mat">Reinforced Steel</div></div>
+        <div class="est-item"><div class="qty">${sandCftVolume.toLocaleString()}</div><div class="unit">Cubic Feet</div><div class="mat">Coarse Sand Aggregate</div></div>
+        <div class="est-item"><div class="qty">${aggregatesCftVolume.toLocaleString()}</div><div class="unit">Cubic Feet</div><div class="mat">Coarse Stone Aggregate</div></div>
+        <div class="est-item"><div class="qty">${brickPieces.toLocaleString()}</div><div class="unit">Pieces</div><div class="mat">Standard Wall Bricks</div></div>
+      </div>`;
+    showToast("Volumetric logs derived successfully.");
+  }
+
+  function getDecor() {
+    const chosenSpace = document.getElementById('dRoom').value;
+    const selectedStyle = document.getElementById('dStyle').value;
+    const outputDiv = document.getElementById('decorOut');
+
+    let swatchesHexArray = ['#f4f1ea', '#ded9cf', '#2c3e50'];
+    let hardwareModules = ['Linear Track Light Configuration', 'Modular Floating Corner Console', 'Low-profile Sectional Setup'];
+
+    if(selectedStyle.includes('Luxury')) {
+      swatchesHexArray = ['#1a1a2e', '#e67e22', '#fafaf8'];
+      hardwareModules = ['Velvet Upholstered Lounge Set', 'Suspended Chandelier Luminaire', 'Bookmatched Onyx Backpanel'];
+    } else if(selectedStyle.includes('Industrial')) {
+      swatchesHexArray = ['#7f8c8d', '#111424', '#c0392b'];
+      hardwareModules = ['Matte Carbon Steel Wall Framing', 'Top-grain Distressed Leather Seating', 'Exposed Conduit Filament Array'];
+    }
+
+    outputDiv.innerHTML = `
+      <div class="decor-card">
+        <h3>Interior Layout Proposal: ${chosenSpace} (${selectedStyle})</h3>
+        <p style="font-size:14px; margin-bottom:12px; color:var(--steel);">Recommended Base Palette Array:</p>
+        <div class="color-swatches">
+          ${swatchesHexArray.map(colorCode => `<div class="swatch" style="background:${colorCode};" title="${colorCode}"></div>`).join('')}
+        </div>
+        <p style="font-size:14px; margin-top:16px; margin-bottom:8px; font-weight:600;">Hardware Inclusions:</p>
+        <div class="furniture-list">
+          ${hardwareModules.map(itemText => `<div class="furn-item">📐 ${itemText}</div>`).join('')}
+        </div>
+      </div>`;
+    showToast("Interior configuration model rendered.");
+  }
+
+  function renderSpatialBlueprint() {
+    const canvasElement = document.getElementById('layoutCanvas');
+    const drawCtx = canvasElement.getContext('2d');
+    drawCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+    if (!viewportMode3D) {
+      drawCtx.strokeStyle = "rgba(0, 242, 254, 0.05)";
+      drawCtx.lineWidth = 1;
+      for (let xPos = 0; xPos < canvasElement.width; xPos += 20) { drawCtx.beginPath(); drawCtx.moveTo(xPos, 0); drawCtx.lineTo(xPos, canvasElement.height); drawCtx.stroke(); }
+      for (let yPos = 0; yPos < canvasElement.height; yPos += 20) { drawCtx.beginPath(); drawCtx.moveTo(0, yPos); drawCtx.lineTo(canvasElement.width, yPos); drawCtx.stroke(); }
+
+      structuralModules.forEach(roomBlock => {
+        drawCtx.fillStyle = roomBlock.color;
+        drawCtx.globalAlpha = 0.65;
+        drawCtx.fillRect(roomBlock.x, roomBlock.y, roomBlock.w * 8, roomBlock.l * 8);
+        drawCtx.globalAlpha = 1.0;
+        
+        drawCtx.strokeStyle = "#00f2fe";
+        drawCtx.lineWidth = 2;
+        drawCtx.strokeRect(roomBlock.x, roomBlock.y, roomBlock.w * 8, roomBlock.l * 8);
+
+        drawCtx.fillStyle = "#ffffff";
+        drawCtx.font = "bold 12px 'DM Sans'";
+        drawCtx.fillText(`${roomBlock.name} (${roomBlock.w}x${roomBlock.l} ft)`, roomBlock.x + 8, roomBlock.y + 20);
+      });
+    } else {
+      structuralModules.forEach((roomBlock, elementIdx) => {
+        let drawingAnchorX = roomBlock.x + 120 + (elementIdx * 45);
+        let drawingAnchorY = roomBlock.y + 130;
+        let visualWidth = roomBlock.w * 6;
+        let visualLength = roomBlock.l * 6;
+        let structureHeight = 45; 
+
+        drawCtx.fillStyle = "rgba(0, 212, 255, 0.18)";
+        drawCtx.beginPath();
+        drawCtx.moveTo(drawingAnchorX, drawingAnchorY);
+        drawCtx.lineTo(drawingAnchorX + visualWidth, drawingAnchorY - visualWidth * 0.5);
+        drawCtx.lineTo(drawingAnchorX + visualWidth + visualLength, drawingAnchorY - visualWidth * 0.5 + visualLength * 0.5);
+        drawCtx.lineTo(drawingAnchorX + visualLength, drawingAnchorY + visualLength * 0.5);
+        drawCtx.closePath();
+        drawCtx.fill();
+
+        drawCtx.fillStyle = "rgba(0, 212, 255, 0.35)";
+        drawCtx.beginPath();
+        drawCtx.moveTo(drawingAnchorX, drawingAnchorY);
+        drawCtx.lineTo(drawingAnchorX, drawingAnchorY - structureHeight);
+        drawCtx.lineTo(drawingAnchorX + visualLength, drawingAnchorY + visualLength * 0.5 - structureHeight);
+        drawCtx.lineTo(drawingAnchorX + visualLength, drawingAnchorY + visualLength * 0.5);
+        drawCtx.closePath();
+        drawCtx.fill();
+        drawCtx.strokeStyle = "rgba(0, 242, 254, 0.75)";
+        drawCtx.stroke();
+
+        drawCtx.fillStyle = "#00f2fe";
+        drawCtx.font = "11px 'DM Sans'";
+        drawCtx.fillText(`3D Module Node: ${roomBlock.name}`, drawingAnchorX + 12, drawingAnchorY - structureHeight + 15);
+      });
+    }
+  }
+
+  function addRoom() {
+    const designatedName = document.getElementById('rName').value || "Module Unit";
+    const widthMetric = parseInt(document.getElementById('rW').value) || 12;
+    const lengthMetric = parseInt(document.getElementById('rL').value) || 12;
+    const genericColors = ["#2980b9", "#27ae60", "#8e44ad", "#f39c12", "#c0392b"];
+    const randomlySelectedColor = genericColors[Math.floor(Math.random() * genericColors.length)];
+
+    const spacingIncrement = 50 + (structuralModules.length * 40) % 360;
+
+    structuralModules.push({
+      name: designatedName, w: widthMetric, l: lengthMetric, x: spacingIncrement, y: 90, color: randomlySelectedColor
+    });
+
+    renderSpatialBlueprint();
+    showToast(`Structural module initialized: ${designatedName}`);
+  }
+
+  function toggle3D() {
+    viewportMode3D = !viewportMode3D;
+    renderSpatialBlueprint();
+    showToast(viewportMode3D ? "Canvas pipeline configured to 3D Viewport projection mode." : "Canvas scaled to linear 2D Blueprint frame.");
+  }
+
+  function showToast(messageText) {
+    const frameToast = document.getElementById('toast');
+    frameToast.innerText = messageText;
+    frameToast.classList.add('show');
+    setTimeout(() => frameToast.classList.remove('show'), 3500);
+  }
+</script>
+
+</body>
+</html>
