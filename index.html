@@ -227,7 +227,7 @@
     .btn-secondary { background: rgba(0,0,0,0.5); color: var(--sand); border: 2px solid rgba(245,230,200,0.5); backdrop-filter: blur(8px); }
     .btn-secondary:hover { background: rgba(245,230,200,0.2); transform: translateY(-4px); border-color: var(--sand); }
 
-    /* MODERN REFRESHED METRICS AREA (REPLACED THE 8 CIVIL ENGINEERS BOX) */
+    /* MODERN REFRESHED METRICS AREA */
     .hero-stats-container {
       margin-top: 80px; opacity: 0; animation: fadeInDelay 1s ease 1.2s forwards;
     }
@@ -278,6 +278,14 @@
     }
     input:focus, select:focus { border-color: var(--gold); background: white; box-shadow: 0 0 0 3px rgba(230,126,34,0.15); }
     
+    /* Document File Upload styling customization */
+    input[type="file"] {
+      padding: 8px;
+      background: #f1f5f9;
+      border: 1px dashed #cbd5e1;
+      cursor: pointer;
+    }
+
     .submit-btn {
       margin-top: 20px; padding: 14px 28px; background: var(--charcoal); color: white;
       border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
@@ -384,7 +392,6 @@
 <body>
 
 <div id="welcomePoster">
- 
   <p>An interactive modeling environment to calculate building diagnostics, plan structural metrics, and manage design logs smoothly.</p>
   <button class="enter-btn" onclick="initializeWorkspace()">Enter Studio</button>
 </div>
@@ -411,14 +418,11 @@
   <div class="scan-line"></div>
   
   <div class="hero-content-wrapper">
-   
-    
     <div class="hero-btns">
       <button class="btn btn-primary" onclick="showPage('find-engineer',null)">Browse Engineers →</button>
-      <button class="btn btn-secondary" onclick="showPage('layout',null)">register as an engineer</button>
+      <button class="btn btn-secondary" onclick="showPage('find-engineer',null); switchTab('eng','post',document.querySelectorAll('.tabs .tab')[1])">Register as an Engineer</button>
     </div>
 
-    <!-- REWRITTEN METRIC HUB BANNER WITH FLOATING LAYER TRANSITIONS -->
     <div class="hero-stats-container">
       <div class="hero-stats">
         <div class="stat"><div class="stat-num">Global</div><div class="stat-label">AI Standard Access</div></div>
@@ -436,7 +440,7 @@
 
     <div class="tabs">
       <button class="tab active" onclick="switchTab('eng','search',this)">Search Engineers</button>
-      <button class="tab" onclick="switchTab('eng','post',this)">Publish Requirements</button>
+      <button class="tab" onclick="switchTab('eng','post',this)">Register as an Engineer</button>
     </div>
 
     <div id="eng-search" class="tab-content active">
@@ -468,10 +472,54 @@
 
     <div id="eng-post" class="tab-content">
       <div class="form-box">
-        <h3>📤 Broadcast Specifications</h3>
-        <label>Concept Scope Title</label><input type="text" placeholder="e.g. Modern Residential Foundation setup"/>
-        <label>Structural Dimensions Overview</label><input type="text" placeholder="Provide raw measurements..."/>
-        <button class="submit-btn" onclick="showToast('Project variables published to system array.')">Broadcast Post</button>
+        <h3>📤 Engineer Professional Registration</h3>
+        <p style="font-size: 13px; color: var(--cement); margin-bottom: 15px;">Join our audited platform array to match client project bounds.</p>
+        
+        <label>Full Professional Name</label>
+        <input type="text" id="regName" placeholder="e.g. Er. Devendra Malik"/>
+        
+        <div class="form-row">
+          <div>
+            <label>Contact Number</label>
+            <input type="tel" id="regPhone" placeholder="+91 XXXXX XXXXX"/>
+          </div>
+          <div>
+            <label>Email Identification</label>
+            <input type="email" id="regEmail" placeholder="name@domain.com"/>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label>Operations Base (City)</label>
+            <input type="text" id="regCity" placeholder="e.g. Chennai"/>
+          </div>
+          <div>
+            <label>Primary Specialization</label>
+            <select id="regSpec">
+              <option>Residential</option>
+              <option>Commercial</option>
+              <option>Interior Design</option>
+              <option>Structural</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label>Years of Timeline Experience</label>
+            <input type="number" id="regExp" min="0" max="50" value="5"/>
+          </div>
+          <div>
+            <label>Expected Retainer Fee (₹)</label>
+            <input type="number" id="regFee" min="5000" value="50000"/>
+          </div>
+        </div>
+
+        <label>Upload Professional Resume / Credentials (.pdf, .doc)</label>
+        <input type="file" id="regResume" accept=".pdf,.doc,.docx" />
+
+        <button class="submit-btn" onclick="submitEngineerRegistration()">Submit Registration Node</button>
       </div>
     </div>
   </div>
@@ -637,10 +685,19 @@
     const targetedView = document.getElementById(pageId);
     if(targetedView) targetedView.classList.add('active');
     
+    document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+    
     if(btnEl) {
-      document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
       btnEl.classList.add('active');
+    } else {
+      const navBtn = Array.from(document.querySelectorAll('.nav-links button')).find(b => b.getAttribute('onclick')?.includes(`'${pageId}'`));
+      if(navBtn) navBtn.classList.add('active');
     }
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }
 
   function switchTab(prefix, tabId, btnEl) {
@@ -656,6 +713,54 @@
   function updateBudgetLabel() {
     const val = document.getElementById('fBudget').value;
     document.getElementById('budgetVal').innerText = '₹' + parseInt(val).toLocaleString('en-IN');
+  }
+
+  // Engineering registration handler setup
+  function submitEngineerRegistration() {
+    const name = document.getElementById('regName').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const city = document.getElementById('regCity').value.trim() || "Unknown";
+    const spec = document.getElementById('regSpec').value;
+    const exp = parseInt(document.getElementById('regExp').value) || 0;
+    const fee = parseInt(document.getElementById('regFee').value) || 0;
+    const resumeFile = document.getElementById('regResume').files[0];
+
+    if (!name || !phone || !email) {
+      showToast("❌ Please fulfill mandatory Personal Detail items.");
+      return;
+    }
+
+    if (!resumeFile) {
+      showToast("❌ Submission array missing designated Resume Document layout file.");
+      return;
+    }
+
+    // Insert user values into runtime object array data structural pool
+    directoryPool.unshift({
+      name: name.startsWith("Er.") ? name : "Er. " + name,
+      city: city,
+      spec: spec,
+      fee: fee,
+      rating: 5.0, // Default initialization benchmark ranking points
+      exp: exp
+    });
+
+    // Refresh display directory layout rendering view arrays
+    renderEngineers(directoryPool);
+    
+    // Success alerting interface response log operations
+    showToast("✅ Profile array logged! Resume parsed to system pool successfully.");
+    
+    // Clear inputs back to normal placeholder metrics values reset points
+    document.getElementById('regName').value = "";
+    document.getElementById('regPhone').value = "";
+    document.getElementById('regEmail').value = "";
+    document.getElementById('regCity').value = "";
+    document.getElementById('regResume').value = "";
+    
+    // Toggle active interface framework back to directory array listings tab pane block
+    switchTab('eng','search', document.querySelectorAll('.tabs .tab')[0]);
   }
 
   function searchEngineEngineers() {
@@ -838,6 +943,7 @@
     }
   }
 
+  // Engineering modules array adjustment handlers
   function addRoom() {
     const designatedName = document.getElementById('rName').value || "Module Unit";
     const widthMetric = parseInt(document.getElementById('rW').value) || 12;
